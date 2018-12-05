@@ -20,7 +20,7 @@ buildscript {
     jcenter()
     mavenCentral() 
   }
-  dependencies { classpath 'org.ajoberstar:gradle-git:0.8.0' }
+  dependencies { classpath 'org.ajoberstar:gradle-git:1.7.2' }
 }
 
 import org.ajoberstar.grgit.Grgit
