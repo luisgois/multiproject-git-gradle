@@ -3,11 +3,13 @@
  * See more information in "README.md".
  */
 multiproject {
-  rootFolder '../akhikhl_projects'
+  rootFolder '../gradle-examples'
   git baseUrl: 'https://github.com/akhikhl', {
-    project name: 'gradle-onejar'
-    project name: 'xmltools', dependsOn: 'gradle-onejar'
-    project name: 'gino', dependsOn: 'gradle-onejar'
-    project name: 'gasmine', dependsOn: 'gino'
+    project name: 'dependency-management'
+    project name: 'first-java-project'
+    project name: 'integration-tests'
+    project name: 'multi-project-build'
+    project name: 'runnable-binary-distribution'
+    project name: 'testsets-plugin'
   }
 }

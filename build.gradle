@@ -20,7 +20,7 @@ buildscript {
     jcenter()
     mavenCentral() 
   }
-  dependencies { classpath 'org.ajoberstar:gradle-git:0.8.0' }
+  dependencies { classpath 'org.ajoberstar:gradle-git:1.7.2' }
 }
 
 import org.ajoberstar.grgit.Grgit
@@ -164,6 +164,15 @@ if(project.ext.has('extraConfig')) {
 }
 
 def rootFolder = (project.multiproject.rootFolder ? new File(project.projectDir, project.multiproject.rootFolder).canonicalFile : project.projectDir)
+
+
+task('listProjects', group: 'dependencies') {
+  description = 'Lists all projects configured for multiproject build.'
+}
+
+task('listDependencies', group: 'dependencies') {
+  description = 'Lists all project dependencies of multiproject builds.'
+}
 
 task('nuke', group: 'cleanup') {
   description = 'Deletes local git repositories listed in configuration.'
@@ -420,6 +429,30 @@ project.multiproject.projects.each { projName, proj ->
       clean.dependsOn it
       dir = new File(projFolder, isString(proj.build) ? proj.build : '.')
       tasks = [ 'clean' ]
+    }
+
+    task("${projName}_listProjects", type: GradleBuild) {
+      listProjects.dependsOn it
+      if(buildSelfDefined)
+        dir = projFolder
+      else {
+        proj.build = proj.build.toString()
+        if(proj.build.endsWith('.gradle'))
+          buildFile = "$projFolder/${proj.build}"
+        else
+          dir = "$projFolder/${proj.build}"
+      }
+      tasks = [ 'projects' ] 
+      doLast {
+         project.logger.warn 'Listings subprojects within {}', projName
+      }
+    }
+
+    task("${projName}_listDependencies", type: GradleBuild) {
+      listDependencies.dependsOn it
+        buildFile = "$projFolder/${proj.build}"
+        tasks = [ 'dependencies' ] 
+    
     }
   }
   
