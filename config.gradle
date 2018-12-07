@@ -3,11 +3,14 @@
  * See more information in "README.md".
  */
 multiproject {
-  rootFolder '../akhikhl_projects'
-  git baseUrl: 'https://github.com/akhikhl', {
-    project name: 'gradle-onejar'
-    project name: 'xmltools', dependsOn: 'gradle-onejar'
-    project name: 'gino', dependsOn: 'gradle-onejar'
-    project name: 'gasmine', dependsOn: 'gino'
+  rootFolder '/cm/local_build/goi/nes-projects'
+  git baseUrl: 'http://bitbucket-nm.cfmu.corp.eurocontrol.int:7990/bitbucket/scm/nco', {
+    project name: 'framework_build'
+    project name: 'framework_cell', dependsOn: 'framework_build'
+    project name: 'bem_marshaller', dependsOn: 'framework_cell'
+    project name: 'common_iem', dependsOn: 'framework_cell'
+    project name: 'etfms_adapter', dependsOn: ['bem_marshaller','common_iem']
+    project name: 'ifps_adapter', dependsOn: ['bem_marshaller','common_iem']
+    project name: 'env_adapter', dependsOn: 'common_iem'
   }
 }

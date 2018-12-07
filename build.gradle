@@ -17,10 +17,14 @@
 
 buildscript {
   repositories { 
-    jcenter()
-    mavenCentral() 
+    mavenLocal()
+    maven {
+      url 'http://nexus-nm:8081/nexus/content/groups/icm'
+    }
   }
-  dependencies { classpath 'org.ajoberstar:gradle-git:1.7.2' }
+  dependencies { 
+      classpath 'org.ajoberstar:gradle-git:1.7.2'
+  }
 }
 
 import org.ajoberstar.grgit.Grgit
@@ -164,6 +168,27 @@ if(project.ext.has('extraConfig')) {
 }
 
 def rootFolder = (project.multiproject.rootFolder ? new File(project.projectDir, project.multiproject.rootFolder).canonicalFile : project.projectDir)
+
+/*task('depReport', group: 'dependencies') {
+  description = 'Dependency reporting'
+  doLast {
+    println allprojects.join("\n")
+  }
+}*/
+
+Map projectsPerRepository  = [:]
+Map projectDependencies    = [:]
+Map repositoryDependencies = [:]
+String charset = 'UTF-8'
+
+task('allDependencies', group: 'dependencies') {
+  description = 'Dependency reporting'
+  doLast {
+    println projectsPerRepository
+    println projectDependencies
+    println repositoryDependencies
+  }
+}
 
 task('nuke', group: 'cleanup') {
   description = 'Deletes local git repositories listed in configuration.'
@@ -394,7 +419,48 @@ project.multiproject.projects.each { projName, proj ->
   boolean buildSelfDefined = proj.build == null || (proj.build instanceof Boolean && proj.build)
   def projBuildTask = null
   def projCleanTask = null
+  def projectsPerRepositoryTask = null
+
   if(shouldBuild) {
+
+    projectsPerRepositoryTask = task("${projName}_projectsPerRepository") {
+      description = "Reports projects in repository $projName"
+      mustRunAfter update
+      allDependencies.dependsOn it
+
+      // execute
+      //doFirst {
+        File buildFileOrDir = new File(projFolder, isString(proj.build) ? proj.build : '.')
+
+        //def projectsStdOut = new ByteArrayOutputStream()
+        //def projectsStdErr = new ByteArrayOutputStream()
+
+      new ByteArrayOutputStream().withStream { os ->
+        def result = exec {
+          println "executing in $projFolder"
+
+          workingDir = projFolder
+          executable = './gradlew'
+          args = ['projects']
+          standardOutput = os
+
+          /*standardOutput = projectsStdOut
+          errorOutput    = projectsStdErr
+          ignoreExitValue= true*/
+        }
+
+        String myOutput =  os.toString()
+
+        println "output: " + myOutput.length()
+        /*// save output
+        println "stdout: " + projectsStdOut.toString()
+        println "stderr: " + projectsStdErr.toString()
+*/
+        projectsPerRepository.put(projName, myOutput)
+
+      }
+    }
+
     projBuildTask = task("${projName}_build", type: GradleBuild) {
       description = "Builds the project $projName"
       dependsOn maybeClone
@@ -413,6 +479,7 @@ project.multiproject.projects.each { projName, proj ->
       if(proj.skipTests)
         startParameter.excludedTaskNames = [ 'test' ]
     }
+    
     projCleanTask = task("${projName}_clean", type: GradleBuild) {
       description = "Cleans the project $projName"
       dependsOn maybeClone
@@ -911,3 +978,23 @@ project.multiproject.projects.each { projName, proj ->
 
 defaultTasks 'buildApps'
 
+/*
+task dependencyReport {
+    group 'Dependency Management'
+    description 'dependency report'
+    doLast {
+        def file = new File("project-dependencies.dot")
+        file.delete()
+        file << "digraph {\n"
+        file << "splines=ortho\n"
+        project.multiproject.projects.each { item ->
+            def from = item.value
+            //from.configurations.compile.dependencies
+            //        .matching { it in ProjectDependency }
+            //        .each { to -> file << ("\"${from.name}\" -> \"${to.name}\"\n")}
+            println from.name
+        }
+        file << "}\n"
+    }
+}
+*/
