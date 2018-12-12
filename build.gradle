@@ -29,6 +29,7 @@ buildscript {
 
 import org.ajoberstar.grgit.Grgit
 import java.util.regex.Matcher
+import static groovy.json.JsonOutput.*
 
 boolean isString(x) { 
   x instanceof String || x instanceof GString 
@@ -184,7 +185,8 @@ String charset = 'UTF-8'
 task('allDependencies', group: 'dependencies') {
   description = 'Dependency reporting'
   doLast {
-    println projectsPerRepository
+    println prettyPrint(toJson(projectsPerRepository))
+    //println projectsPerRepository
     println projectDependencies
     println repositoryDependencies
   }
@@ -423,40 +425,78 @@ project.multiproject.projects.each { projName, proj ->
 
   if(shouldBuild) {
 
+    /**
+     * Retrieving projects information for each repository
+     */
     projectsPerRepositoryTask = task("${projName}_projectsPerRepository") {
       description = "Reports projects in repository $projName"
       mustRunAfter update
       allDependencies.dependsOn it
 
-      // execute
-      //doFirst {
-        File buildFileOrDir = new File(projFolder, isString(proj.build) ? proj.build : '.')
+      Map dependenciesPerProject = [:]
+      List projects = []
 
-        //def projectsStdOut = new ByteArrayOutputStream()
-        //def projectsStdErr = new ByteArrayOutputStream()
+      File buildFileOrDir = new File(projFolder, isString(proj.build) ? proj.build : '.')
 
       new ByteArrayOutputStream().withStream { os ->
         def result = exec {
-          println "executing in $projFolder"
+          println "retrieving projects in $projFolder"
 
           workingDir = projFolder
           executable = './gradlew'
           args = ['projects']
           standardOutput = os
-
-          /*standardOutput = projectsStdOut
-          errorOutput    = projectsStdErr
-          ignoreExitValue= true*/
         }
 
-        String myOutput =  os.toString()
+        String myOutputStr = os.toString()
 
-        println "output: " + myOutput.length()
-        /*// save output
-        println "stdout: " + projectsStdOut.toString()
-        println "stderr: " + projectsStdErr.toString()
-*/
-        projectsPerRepository.put(projName, myOutput)
+
+        myOutputStr.eachLine { line, count ->
+          def matcher = line =~ /^([+\\ ]--- Project ':)(.*)'/
+          if (matcher.matches()) projects.add(matcher[0][2])
+        }
+      }
+
+      List configurations = ['compile', 'implementation']
+
+      projects.each { project ->
+
+        List prjDependencies = []
+
+        configurations.each { configuration ->
+
+          new ByteArrayOutputStream().withStream { os ->
+            def result = exec {
+              println "retrieving $configuration dependencies for $project"
+
+              workingDir = projFolder
+              executable = './gradlew'
+              args = [ project + ':dependencies', '--configuration', configuration]
+              standardOutput = os
+            }
+
+            String myOutputStr = os.toString()
+
+            myOutputStr.eachLine { line, count ->
+              String dependency
+
+              def matcher = line =~ /^([+\\ ]--- )(.*)/
+              if (matcher.matches()) {
+                dependency = matcher[0][2]
+                prjDependencies.add (dependency)
+              }
+            }
+          }
+
+          dependenciesPerProject.put(project, prjDependencies )
+        }
+
+/*        dependenciesPerProject.each{ key, value ->
+          println "projects      : " + key
+          println "dependencies #: " + value.size()
+        }*/
+
+        projectsPerRepository.put(projName, dependenciesPerProject)
 
       }
     }

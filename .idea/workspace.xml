@@ -2,19 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="071a79fa-6b3a-499d-9d9f-07f460735070" name="Default" comment="">
-      <change beforePath="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/.gitignore" beforeDir="false" afterPath="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/.gitignore" afterDir="false" />
-      <change beforePath="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/build.gradle" beforeDir="false" afterPath="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/build.gradle" afterDir="false" />
-      <change beforePath="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/config.gradle" beforeDir="false" afterPath="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/config.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/config.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/../build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../config.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/../config.gradle" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.gradle/" />
     <ignored path="$PROJECT_DIR$/build/" />
     <ignored path="$PROJECT_DIR$/out/" />
-    <ignored path="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/.gradle/" />
-    <ignored path="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/build/" />
-    <ignored path="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/out/" />
+    <ignored path="$PROJECT_DIR$/../.gradle/" />
+    <ignored path="$PROJECT_DIR$/../build/" />
+    <ignored path="$PROJECT_DIR$/../out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,32 +20,65 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$/..">
+      <ProjectState />
+    </projectState>
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
     </projectState>
   </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$/..">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="multiproject-git-gradle" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="multiproject-git-gradle" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="multiproject-git-gradle" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="dependencies" type="c8890929:TasksNode$1" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
-        <entry file="file:///auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/build.gradle">
+        <entry file="file://$PROJECT_DIR$/../build.gradle">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="516">
-              <caret line="453" column="46" lean-forward="true" selection-start-line="453" selection-start-column="46" selection-end-line="453" selection-end-column="46" />
+            <state relative-caret-position="284">
+              <caret line="493" column="2" selection-start-line="493" selection-end-line="496" selection-end-column="11" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
-                <element signature="e#653#686#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file:///auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/deps.gradle">
+        <entry file="file://$PROJECT_DIR$/../deps.gradle">
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file:///auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/init.gradle">
+        <entry file="file://$PROJECT_DIR$/../init.gradle">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="105">
               <caret line="7" column="39" selection-start-line="7" selection-start-column="39" selection-end-line="7" selection-end-column="39" />
@@ -56,7 +87,7 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file:///auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/config.gradle">
+        <entry file="file://$PROJECT_DIR$/../config.gradle">
           <provider selected="true" editor-type-id="text-editor">
             <state>
               <folding>
@@ -91,24 +122,28 @@
       <find>rootFolder</find>
       <find>gradle</find>
       <find>_project</find>
+      <find>allDependenc</find>
+      <find>DefaultDependencyHandler</find>
+      <find>dependencies</find>
+      <find>alldependen</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/build.gradle" />
-        <option value="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/init.gradle" />
-        <option value="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/deps.gradle" />
-        <option value="/auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/build.gradle" />
+        <option value="$PROJECT_DIR$/../init.gradle" />
+        <option value="$PROJECT_DIR$/../deps.gradle" />
+        <option value="$PROJECT_DIR$/../build.gradle" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="4">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="y" value="28" />
-    <option name="width" value="960" />
+    <option name="width" value="950" />
     <option name="height" value="1138" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -117,23 +152,23 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
-              <item name="multiproject-git-gradle" type="b2602c69:ProjectViewProjectNode" />
+              <item name="." type="b2602c69:ProjectViewProjectNode" />
               <item name="multiproject-git-gradle" type="8a07ba80:GradleTreeStructureProvider$GradleModuleDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1544202937601" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1544642496781" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
   </component>
@@ -156,6 +191,25 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name=". [allDependencies]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/.." />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="allDependencies" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <GradleScriptDebugEnabled>true</GradleScriptDebugEnabled>
+      <method v="2" />
+    </configuration>
     <configuration default="true" type="JUnit" factoryName="JUnit">
       <option name="WORKING_DIRECTORY" value="%MODULE_WORKING_DIR%" />
       <method v="2">
@@ -170,6 +224,11 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.. [allDependencies]" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -185,10 +244,9 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="28" width="960" height="1138" extended-state="4" />
-    <editor active="true" />
+    <frame x="0" y="28" width="1920" height="1138" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.25438598" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.122329056" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -197,7 +255,7 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998997" />
-      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.4774323" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -212,7 +270,7 @@
       <window_info anchor="right" id="Palette" order="3" />
       <window_info anchor="right" id="Capture Analysis" order="4" />
       <window_info anchor="right" id="Ant Build" order="5" weight="0.25" />
-      <window_info anchor="right" id="Gradle" order="6" />
+      <window_info anchor="right" id="Gradle" order="6" visible="true" weight="0.15865384" />
       <window_info anchor="right" id="Theme Preview" order="7" />
       <window_info anchor="right" id="Palette&#9;" order="8" />
       <window_info anchor="right" id="Maven Projects" order="9" />
@@ -256,7 +314,7 @@
   </component>
   <component name="editorHistoryManager">
     <entry file="file:$PROJECT_DIR$/../../../../..///cm/local_build/goi/multiproject-git-gradle/build.gradle" />
-    <entry file="file://$PROJECT_DIR$/config.gradle">
+    <entry file="file://$PROJECT_DIR$/../config.gradle">
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <folding>
@@ -265,32 +323,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/config.gradle">
+    <entry file="file://$PROJECT_DIR$/../build.gradle">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
+        <state relative-caret-position="284">
+          <caret line="493" column="2" selection-start-line="493" selection-end-line="496" selection-end-column="11" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file:///auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/init.gradle">
+    <entry file="file://$PROJECT_DIR$/../deps.gradle">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../init.gradle">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="105">
           <caret line="7" column="39" selection-start-line="7" selection-start-column="39" selection-end-line="7" selection-end-column="39" />
         </state>
       </provider>
     </entry>
-    <entry file="file:///auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/deps.gradle">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file:///auto/local_build/dhws148/ssd1/goi/multiproject-git-gradle/build.gradle">
+    <entry file="file://$PROJECT_DIR$/../config.gradle">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="516">
-          <caret line="453" column="46" lean-forward="true" selection-start-line="453" selection-start-column="46" selection-end-line="453" selection-end-column="46" />
+        <state>
           <folding>
             <element signature="n#!!doc" expanded="true" />
-            <element signature="e#653#686#0" expanded="true" />
           </folding>
         </state>
       </provider>
