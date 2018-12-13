@@ -24,6 +24,7 @@ buildscript {
   }
   dependencies { 
       classpath 'org.ajoberstar:gradle-git:1.7.2'
+      classpath 'net.sourceforge.plantuml:plantuml:1.2018.13'
   }
 }
 
@@ -177,6 +178,71 @@ def rootFolder = (project.multiproject.rootFolder ? new File(project.projectDir,
   }
 }*/
 
+/*
+class DependencyGraph {
+  Map dependencyMap
+  Map idxProjectRepository
+
+  DependencyGraph (Map dependencyMap) {
+    this.dependencyMap = dependencyMap
+
+    dependencyMap.each { String repository ->
+      dependencyMap.get(repository).each { String project ->
+        idxProjectRepository.put(project, repository)
+      }
+    }
+  }
+
+  String getRepositoryOf(String dependency) {
+    return idxProjectRepository.get(dependency)
+  }
+
+  public String toPng () {
+
+    Map<String, Map> interRepositoryDependencies = [:]
+    String plantumlText = '@startuml'
+
+    dependencyMap.each { String repository ->
+      dependencyMap.get(repository).each { String project ->
+        idxProjectRepository.put(project, repository)
+      }
+    }
+
+    dependencyMap.each { String repository ->
+      interRepositoryDependencies.put(repository,[])
+      plantumlText += "rectangle " + repository  + "\n"
+
+      dependencyMap.get(repository).each { String project ->
+        project.each { dependency ->
+          // find repository of dependency
+          // add to
+          String dependencyRepository = getRepositoryOf(dependency)
+
+          if ( dependencyRepository!=repository) {
+            interRepositoryDependencies.get(repository).put(dependencyRepository,'')
+          }
+        }
+      }
+    }
+
+    interRepositoryDependencies.each {String fromRepository ->
+      interRepositoryDependencies.get(fromRepository).each { String toRepository ->
+        plantumlText += fromRepository + "-->" + toRepository + "\n"
+      }
+    }
+
+    plantumlText += '@enduml'
+
+    def s = new net.sourceforge.plantuml.SourceStringReader(plantumlText)
+    FileOutputStream file = new FileOutputStream("/tmp/DependencyGraph.png")
+    s.outputImage(file) //.generateImage(file)
+    file.close()
+
+    return file.toString()
+  }
+}
+*/
+
 Map projectsPerRepository  = [:]
 Map projectDependencies    = [:]
 Map repositoryDependencies = [:]
@@ -186,6 +252,55 @@ task('allDependencies', group: 'dependencies') {
   description = 'Dependency reporting'
   doLast {
     println prettyPrint(toJson(projectsPerRepository))
+
+    /*Map dependencyMap = projectsPerRepository
+    Map idxProjectRepository = [:]
+
+    dependencyMap.each { String repository, Map repositoryProjects ->
+      repositoryProjects.keySet().each { String project ->
+        idxProjectRepository.put(project, repository)
+      }
+    }
+
+    Map<String, Map> interRepositoryDependencies = [:]
+    String plantumlText = '@startuml'
+
+    dependencyMap.each { String repository, Map repositoryProjects ->
+      interRepositoryDependencies.put(repository,[])
+      plantumlText += "rectangle " + repository  + "\n"
+
+      repositoryProjects.each { String project, List dependencies ->
+        dependencies.each { String dependencyName, String dependencyVersion ->
+
+          // find project dependency's repository and add it to list of repository dependencies
+
+          String dependencyRepository = idxProjectRepository.get(dependencyName)
+
+          if ( dependencyRepository != null && dependencyRepository != repository) {
+            interRepositoryDependencies.get(repository).put([name: dependencyRepository, version: dependencyVersion])
+          }
+        }
+      }
+    }
+
+    interRepositoryDependencies.each {String fromRepository, List toRepositories ->
+      toRepositories.each { Map toRepository  ->
+        plantumlText += fromRepository + "-->" + toRepository.name + ":" + toRepository.version + "\n"
+      }
+    }
+
+    plantumlText += '@enduml'
+
+    def s = new net.sourceforge.plantuml.SourceStringReader(plantumlText)
+    FileOutputStream file = new FileOutputStream("/tmp/DependencyGraph.png")
+    s.outputImage(file) //.generateImage(file)
+    file.close()*/
+
+/*
+    DependencyGraph graph = new DependencyGraph(dependencyMap: projectsPerRepository)
+    graph.toPng()
+*/
+
     //println projectsPerRepository
     println projectDependencies
     println repositoryDependencies
@@ -435,6 +550,7 @@ project.multiproject.projects.each { projName, proj ->
 
       Map dependenciesPerProject = [:]
       List projects = []
+      String repositoryVersion = ""
 
       File buildFileOrDir = new File(projFolder, isString(proj.build) ? proj.build : '.')
 
@@ -444,7 +560,7 @@ project.multiproject.projects.each { projName, proj ->
 
           workingDir = projFolder
           executable = './gradlew'
-          args = ['projects']
+          args = ['projects', 'showVersion']
           standardOutput = os
         }
 
@@ -454,14 +570,33 @@ project.multiproject.projects.each { projName, proj ->
         myOutputStr.eachLine { line, count ->
           def matcher = line =~ /^([+\\ ]--- Project ':)(.*)'/
           if (matcher.matches()) projects.add(matcher[0][2])
+          matcher = line =~ /^(Version: )(.*)/
+          if (matcher.matches()) repositoryVersion=matcher[0][2]
         }
       }
 
       List configurations = ['compile', 'implementation']
+      def builder = new JsonBuilder()
+      def projectsPerRepositoryJson = builder {
+        repositories {
+          repository {
+            name "$projName"
+            version "$repositoryVersion"
+            projects []
+          }
+        }
+      }
 
       projects.each { project ->
 
-        List prjDependencies = []
+        def projectsJson = builder {
+          project {
+            name "$project"
+            dependencies [
+            ]
+          }
+        }
+        Map prjDependencies = [:]
 
         configurations.each { configuration ->
 
@@ -479,16 +614,31 @@ project.multiproject.projects.each { projName, proj ->
 
             myOutputStr.eachLine { line, count ->
               String dependency
+              String version
 
-              def matcher = line =~ /^([+\\ ]--- )(.*)/
+              def matcher = line =~ /^([+\\ ]--- eurocontrol.nconect):([^:]+):(.*)/
               if (matcher.matches()) {
                 dependency = matcher[0][2]
-                prjDependencies.add (dependency)
+                version = matcher[0][3]
+
+                def projectDependencyJson = builder {
+                    dependencies {
+                      dependency {
+                        name "$dependency"
+                        version "$version"
+                      }
+                    }
+                  }
+                }
+
+                projectsJson.project.dependencies = projectsJson.dependencies << projectDependencyJson.dependencies
+
+                //prjDependencies.put ([dependency: dependency], [version: version])
               }
             }
           }
 
-          dependenciesPerProject.put(project, prjDependencies )
+          dependenciesPerProject.put([project: project],[dependencies: prjDependencies ])
         }
 
 /*        dependenciesPerProject.each{ key, value ->
@@ -496,7 +646,7 @@ project.multiproject.projects.each { projName, proj ->
           println "dependencies #: " + value.size()
         }*/
 
-        projectsPerRepository.put(projName, dependenciesPerProject)
+        projectsPerRepository.put([repository: projName], [projects: dependenciesPerProject])
 
       }
     }
