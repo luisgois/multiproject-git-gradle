@@ -580,7 +580,9 @@ project.multiproject.projects.each { projName, proj ->
       mustRunAfter update
       allDependencies.dependsOn it
 
-      List configurations = ['compile', 'implementation']
+      //List configurations = ['compile', 'implementation']
+      List configurations = ['default']
+
       Repository projectRepository = new Repository(name: projName)
 
       File buildFileOrDir = new File(projFolder, isString(proj.build) ? proj.build : '.')
@@ -629,10 +631,10 @@ project.multiproject.projects.each { projName, proj ->
             }
 
             String myOutputStr = os.toString()
-
+            //TODO document each line format according to Gradle and make code more readable - simplify if-else-matcher
             myOutputStr.eachLine { line, count ->
 
-              def matcher = line =~ /^([+\\ ]--- eurocontrol.nconect):([^:]+):(.*)/
+              def matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):(.*)/
               if (matcher.matches()) {
                 ProjectDependency prjdep = new ProjectDependency(
                         name: matcher[0][2],
@@ -640,6 +642,27 @@ project.multiproject.projects.each { projName, proj ->
                 )
                 project.dependencies.add(prjdep)
               }
+              else {
+                matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+) -> (.*)/
+                if (matcher.matches()) {
+                  ProjectDependency prjdep = new ProjectDependency(
+                          name: matcher[0][2],
+                          version: matcher[0][3]
+                  )
+                  project.dependencies.add(prjdep)
+                }
+                else {
+                  matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]+) -> (.*)/
+                  if (matcher.matches()) {
+                    ProjectDependency prjdep = new ProjectDependency(
+                            name: matcher[0][2],
+                            version: matcher[0][4]
+                    )
+                    project.dependencies.add(prjdep)
+                  }
+                }
+              }
+
             }
           } // foreach dependency
         }   // foreach configuration
