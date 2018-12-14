@@ -580,6 +580,7 @@ project.multiproject.projects.each { projName, proj ->
       mustRunAfter update
       allDependencies.dependsOn it
 
+      doLast {
       //List configurations = ['compile', 'implementation']
       List configurations = ['default']
 
@@ -672,6 +673,7 @@ project.multiproject.projects.each { projName, proj ->
       //TODO define repository files as task inputs (if not default, TBC)
       //TODO create json file for repository and define it as task output
       repositoriesList.add(projectRepository)
+      } //doLast
     }
 
     projBuildTask = task("${projName}_build", type: GradleBuild) {

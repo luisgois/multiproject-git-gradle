@@ -2,6 +2,5 @@ build
 .gradle
 .groovy
 .settings
-gradle
-gradlew
 gradlew.bat
+cm
