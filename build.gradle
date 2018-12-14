@@ -171,6 +171,29 @@ if(project.ext.has('extraConfig')) {
 
 def rootFolder = (project.multiproject.rootFolder ? new File(project.projectDir, project.multiproject.rootFolder).canonicalFile : project.projectDir)
 
+println "==="
+println project.multiproject.rootFolder
+println project.projectDir
+println "==="
+
+println "====\n$rootFolder\n====="
+
+class ProjectDependency {
+  String name
+  String version
+  List<ProjectDependency> dependencies = []
+}
+
+class RepositoryProject extends ProjectDependency {}
+
+class Repository {
+  String name
+  String version
+  List<RepositoryProject> projects = []
+}
+
+List<Repository> repositoriesList = []
+
 /*task('depReport', group: 'dependencies') {
   description = 'Dependency reporting'
   doLast {
@@ -180,14 +203,14 @@ def rootFolder = (project.multiproject.rootFolder ? new File(project.projectDir,
 
 /*
 class DependencyGraph {
-  Map dependencyMap
+  Map repositoriesList
   Map idxProjectRepository
 
-  DependencyGraph (Map dependencyMap) {
-    this.dependencyMap = dependencyMap
+  DependencyGraph (Map repositoriesList) {
+    this.repositoriesList = repositoriesList
 
-    dependencyMap.each { String repository ->
-      dependencyMap.get(repository).each { String project ->
+    repositoriesList.each { String repository ->
+      repositoriesList.get(repository).each { String project ->
         idxProjectRepository.put(project, repository)
       }
     }
@@ -202,17 +225,17 @@ class DependencyGraph {
     Map<String, Map> interRepositoryDependencies = [:]
     String plantumlText = '@startuml'
 
-    dependencyMap.each { String repository ->
-      dependencyMap.get(repository).each { String project ->
+    repositoriesList.each { String repository ->
+      repositoriesList.get(repository).each { String project ->
         idxProjectRepository.put(project, repository)
       }
     }
 
-    dependencyMap.each { String repository ->
+    repositoriesList.each { String repository ->
       interRepositoryDependencies.put(repository,[])
       plantumlText += "rectangle " + repository  + "\n"
 
-      dependencyMap.get(repository).each { String project ->
+      repositoriesList.get(repository).each { String project ->
         project.each { dependency ->
           // find repository of dependency
           // add to
@@ -251,53 +274,62 @@ String charset = 'UTF-8'
 task('allDependencies', group: 'dependencies') {
   description = 'Dependency reporting'
   doLast {
-    println prettyPrint(toJson(projectsPerRepository))
-
-    /*Map dependencyMap = projectsPerRepository
+    //println prettyPrint(toJson(projectsPerRepository))
+    def builder = new groovy.json.JsonBuilder(repositoriesList)
+    println prettyPrint(builder.toString())
+    
     Map idxProjectRepository = [:]
 
-    dependencyMap.each { String repository, Map repositoryProjects ->
-      repositoryProjects.keySet().each { String project ->
-        idxProjectRepository.put(project, repository)
+    repositoriesList.each { Repository repository ->
+      repository.projects.each { RepositoryProject project ->
+        idxProjectRepository.put(project.name, repository.name)
       }
     }
 
     Map<String, Map> interRepositoryDependencies = [:]
-    String plantumlText = '@startuml'
+    String plantumlText = "@startuml\n"
 
-    dependencyMap.each { String repository, Map repositoryProjects ->
-      interRepositoryDependencies.put(repository,[])
-      plantumlText += "rectangle " + repository  + "\n"
+    repositoriesList.each { Repository repository ->
+      interRepositoryDependencies.put(repository.name,[:])
+      plantumlText += "rectangle " + repository.name  + "\n"
 
-      repositoryProjects.each { String project, List dependencies ->
-        dependencies.each { String dependencyName, String dependencyVersion ->
+      println "repository :" + repository.name + ":"
+
+      repository.projects.each { RepositoryProject project ->
+        project.dependencies.each { ProjectDependency dependency ->
 
           // find project dependency's repository and add it to list of repository dependencies
 
-          String dependencyRepository = idxProjectRepository.get(dependencyName)
+          String dependencyRepository = idxProjectRepository.get(dependency.name)
 
-          if ( dependencyRepository != null && dependencyRepository != repository) {
-            interRepositoryDependencies.get(repository).put([name: dependencyRepository, version: dependencyVersion])
+          if ( dependencyRepository != null && dependencyRepository != repository.name) {
+
+            println "dependency :" + dependencyRepository + ":"
+
+            // append new repository to list of dependencies
+            interRepositoryDependencies.get(repository.name) << ["$dependencyRepository" : "$dependency.version" ]
           }
         }
       }
     }
 
-    interRepositoryDependencies.each {String fromRepository, List toRepositories ->
-      toRepositories.each { Map toRepository  ->
-        plantumlText += fromRepository + "-->" + toRepository.name + ":" + toRepository.version + "\n"
+    interRepositoryDependencies.each {String fromRepository, Map toRepositories ->
+      toRepositories.each { String name, String version ->
+        plantumlText += fromRepository + "-->" + name + ":" + version + "\n"
       }
     }
 
     plantumlText += '@enduml'
 
+    println plantumlText
+
     def s = new net.sourceforge.plantuml.SourceStringReader(plantumlText)
     FileOutputStream file = new FileOutputStream("/tmp/DependencyGraph.png")
     s.outputImage(file) //.generateImage(file)
-    file.close()*/
+    file.close()
 
 /*
-    DependencyGraph graph = new DependencyGraph(dependencyMap: projectsPerRepository)
+    DependencyGraph graph = new DependencyGraph(repositoriesList: projectsPerRepository)
     graph.toPng()
 */
 
@@ -548,9 +580,8 @@ project.multiproject.projects.each { projName, proj ->
       mustRunAfter update
       allDependencies.dependsOn it
 
-      Map dependenciesPerProject = [:]
-      List projects = []
-      String repositoryVersion = ""
+      List configurations = ['compile', 'implementation']
+      Repository projectRepository = new Repository(name: projName)
 
       File buildFileOrDir = new File(projFolder, isString(proj.build) ? proj.build : '.')
 
@@ -569,86 +600,55 @@ project.multiproject.projects.each { projName, proj ->
 
         myOutputStr.eachLine { line, count ->
           def matcher = line =~ /^([+\\ ]--- Project ':)(.*)'/
-          if (matcher.matches()) projects.add(matcher[0][2])
+
+          if (matcher.matches()) projectRepository.projects.add(
+                  new RepositoryProject(name: matcher[0][2])
+          )
+
           matcher = line =~ /^(Version: )(.*)/
-          if (matcher.matches()) repositoryVersion=matcher[0][2]
+          if (matcher.matches()) projectRepository.version=matcher[0][2]
         }
+
       }
 
-      List configurations = ['compile', 'implementation']
-      def builder = new JsonBuilder()
-      def projectsPerRepositoryJson = builder {
-        repositories {
-          repository {
-            name "$projName"
-            version "$repositoryVersion"
-            projects []
-          }
-        }
-      }
+      projectRepository.projects.each { RepositoryProject project ->
 
-      projects.each { project ->
-
-        def projectsJson = builder {
-          project {
-            name "$project"
-            dependencies [
-            ]
-          }
-        }
-        Map prjDependencies = [:]
+        // all repository projects share same version as repository
+        project.version = projectRepository.version
 
         configurations.each { configuration ->
 
           new ByteArrayOutputStream().withStream { os ->
             def result = exec {
-              println "retrieving $configuration dependencies for $project"
+              println "retrieving $configuration dependencies for $project.name"
 
               workingDir = projFolder
               executable = './gradlew'
-              args = [ project + ':dependencies', '--configuration', configuration]
+              args = [project.name + ':dependencies', '--configuration', configuration]
               standardOutput = os
             }
 
             String myOutputStr = os.toString()
 
             myOutputStr.eachLine { line, count ->
-              String dependency
-              String version
 
               def matcher = line =~ /^([+\\ ]--- eurocontrol.nconect):([^:]+):(.*)/
               if (matcher.matches()) {
-                dependency = matcher[0][2]
-                version = matcher[0][3]
-
-                def projectDependencyJson = builder {
-                    dependencies {
-                      dependency {
-                        name "$dependency"
-                        version "$version"
-                      }
-                    }
-                  }
-                }
-
-                projectsJson.project.dependencies = projectsJson.dependencies << projectDependencyJson.dependencies
-
-                //prjDependencies.put ([dependency: dependency], [version: version])
+                ProjectDependency prjdep = new ProjectDependency(
+                        name: matcher[0][2],
+                        version: matcher[0][3]
+                )
+                project.dependencies.add(prjdep)
               }
             }
-          }
+          } // foreach dependency
+        }   // foreach configuration
+      }     // foreach project
 
-          dependenciesPerProject.put([project: project],[dependencies: prjDependencies ])
-        }
-
-/*        dependenciesPerProject.each{ key, value ->
-          println "projects      : " + key
-          println "dependencies #: " + value.size()
-        }*/
-
-        projectsPerRepository.put([repository: projName], [projects: dependenciesPerProject])
-
-      }
+      // add repository to map
+      //TODO define repository files as task inputs (if not default, TBC)
+      //TODO create json file for repository and define it as task output
+      repositoriesList.add(projectRepository)
     }
 
     projBuildTask = task("${projName}_build", type: GradleBuild) {
