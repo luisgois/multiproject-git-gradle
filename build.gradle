@@ -158,7 +158,7 @@ class MultiProjectExtension {
 
 project.extensions.create 'multiproject', MultiProjectExtension
   
-apply from: 'config.gradle'
+apply from: 'config.gradle.nes-projects'
 
 if(project.ext.has('extraConfig')) {
   def extraConfigs = project.ext.extraConfig.split(',')
@@ -170,13 +170,6 @@ if(project.ext.has('extraConfig')) {
 }
 
 def rootFolder = (project.multiproject.rootFolder ? new File(project.projectDir, project.multiproject.rootFolder).canonicalFile : project.projectDir)
-
-println "==="
-println project.multiproject.rootFolder
-println project.projectDir
-println "==="
-
-println "====\n$rootFolder\n====="
 
 class ProjectDependency {
   String name
@@ -271,6 +264,10 @@ Map projectDependencies    = [:]
 Map repositoryDependencies = [:]
 String charset = 'UTF-8'
 
+def getDate() {
+  new Date().format('yyyyMMddHHmmssSSS')
+}
+
 task('allDependencies', group: 'dependencies') {
   description = 'Dependency reporting'
   doLast {
@@ -324,7 +321,7 @@ task('allDependencies', group: 'dependencies') {
     println plantumlText
 
     def s = new net.sourceforge.plantuml.SourceStringReader(plantumlText)
-    FileOutputStream file = new FileOutputStream("/tmp/DependencyGraph.png")
+    FileOutputStream file = new FileOutputStream("/tmp/DependencyGraph_${getDate()}.png")
     s.outputImage(file) //.generateImage(file)
     file.close()
 
@@ -615,10 +612,7 @@ project.multiproject.projects.each { projName, proj ->
 
       }
 
-      projectRepository.projects.each { RepositoryProject project ->
-
-        // all repository projects share same version as repository
-        project.version = projectRepository.version
+      
 
         configurations.each { configuration ->
 
@@ -628,53 +622,64 @@ project.multiproject.projects.each { projName, proj ->
 
               workingDir = projFolder
               executable = './gradlew'
-              args = [project.name + ':dependencies', '--configuration', configuration]
+
+              projectRepository.projects.each { RepositoryProject project ->
+
+                // all repository projects share same version as repository
+                project.version = projectRepository.version
+
+                args += [project.name + ':dependencies', '--configuration', configuration]
+              }     // foreach project
+              
               standardOutput = os
               ignoreExitValue = true
             }
+            
+            String myOutputStrAll = os.toString()
+            
+            projectRepository.projects.each { RepositoryProject project ->
+            
+              myOutputStrAll.findAll(/(?ms)^Project :${project.name}$.*\\--- .+\n$/).each { myOutputStr ->
 
-            String myOutputStr = os.toString()
-            //TODO document each line format according to Gradle and make code more readable - simplify if-else-matcher
-            myOutputStr.eachLine { line, count ->
+                //TODO document each line format according to Gradle and make code more readable - simplify if-else-matcher
+                myOutputStr.eachLine { line, count ->
 
-              def matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]+)/
-              if (matcher.matches()) {
-                ProjectDependency prjdep = new ProjectDependency(
-                        name: matcher[0][2],
-                        version: matcher[0][3]
-                )
-                project.dependencies.add(prjdep)
-              }
-              else {
-                matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+) -> (.*)/
-                if (matcher.matches()) {
-                  ProjectDependency prjdep = new ProjectDependency(
-                          name: matcher[0][2],
-                          version: matcher[0][3]
-                  )
-                  project.dependencies.add(prjdep)
-                }
-                else {
-                  matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]*) -> (.*)/
+                  def matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]+)/
                   if (matcher.matches()) {
                     ProjectDependency prjdep = new ProjectDependency(
                             name: matcher[0][2],
-                            version: matcher[0][4]
+                            version: matcher[0][3]
                     )
                     project.dependencies.add(prjdep)
+                  } else {
+                    matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+) -> (.*)/
+                    if (matcher.matches()) {
+                      ProjectDependency prjdep = new ProjectDependency(
+                              name: matcher[0][2],
+                              version: matcher[0][3]
+                      )
+                      project.dependencies.add(prjdep)
+                    } else {
+                      matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]*) -> (.*)/
+                      if (matcher.matches()) {
+                        ProjectDependency prjdep = new ProjectDependency(
+                                name: matcher[0][2],
+                                version: matcher[0][4]
+                        )
+                        project.dependencies.add(prjdep)
+                      }
+                    }
                   }
                 }
-              }
+              } // foreach project
+            }   // foreach all project dependency blocks
+          }     // foreach dependency
+        }       // foreach configuration
 
-            }
-          } // foreach dependency
-        }   // foreach configuration
-      }     // foreach project
-
-      // add repository to map
-      //TODO define repository files as task inputs (if not default, TBC)
-      //TODO create json file for repository and define it as task output
-      repositoriesList.add(projectRepository)
+        // add repository to map
+        //TODO define repository files as task inputs (if not default, TBC)
+        //TODO create json file for repository and define it as task output
+        repositoriesList.add(projectRepository)
       } //doLast
     }
 
