@@ -14,7 +14,6 @@ multiproject {
     project name: 'b2b-ps'
     project name: 'b2b_gateway'
     project name: 'b2c-core'
-    project name: 'b2c-map'
     project name: 'b2c-react'
     project name: 'b2c_gateway'
     project name: 'bem_marshaller'
@@ -59,7 +58,6 @@ multiproject {
     project name: 'map-node'
     project name: 'master'
     project name: 'mongo'
-    project name: 'nco_repositories.csv'
     project name: 'nconect_hmi'
     project name: 'net'
     project name: 'notify'
@@ -71,7 +69,6 @@ multiproject {
     project name: 'scheduler'
     project name: 'search'
     project name: 'spring-boot-admin'
-    project name: 'system-test'
     project name: 'testlab-plugin'
     project name: 'upload'
   }
