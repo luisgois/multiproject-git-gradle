@@ -158,7 +158,7 @@ class MultiProjectExtension {
 
 project.extensions.create 'multiproject', MultiProjectExtension
   
-apply from: 'config.gradle.nes-projects'
+apply from: 'config.gradle'
 
 if(project.ext.has('extraConfig')) {
   def extraConfigs = project.ext.extraConfig.split(',')
