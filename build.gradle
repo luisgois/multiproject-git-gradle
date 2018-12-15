@@ -596,6 +596,7 @@ project.multiproject.projects.each { projName, proj ->
           executable = './gradlew'
           args = ['projects', 'showVersion']
           standardOutput = os
+          ignoreExitValue = true
         }
 
         String myOutputStr = os.toString()
@@ -629,6 +630,7 @@ project.multiproject.projects.each { projName, proj ->
               executable = './gradlew'
               args = [project.name + ':dependencies', '--configuration', configuration]
               standardOutput = os
+              ignoreExitValue = true
             }
 
             String myOutputStr = os.toString()
