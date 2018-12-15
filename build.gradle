@@ -233,7 +233,7 @@ class DependencyGraph {
 
     repositoriesList.each { String repository ->
       interRepositoryDependencies.put(repository,[])
-      plantumlText += "rectangle " + repository  + "\n"
+      plantumlText += "rectangle \"" + repository  + "\" as " + repository.replace('-','_') + "\n"
 
       repositoriesList.get(repository).each { String project ->
         project.each { dependency ->
@@ -250,7 +250,7 @@ class DependencyGraph {
 
     interRepositoryDependencies.each {String fromRepository ->
       interRepositoryDependencies.get(fromRepository).each { String toRepository ->
-        plantumlText += fromRepository + "-->" + toRepository + "\n"
+        plantumlText += fromRepository.replace('-','_') + "-->" + toRepository.replace('-','_') + "\n"
       }
     }
 
@@ -291,7 +291,7 @@ task('allDependencies', group: 'dependencies') {
 
     repositoriesList.each { Repository repository ->
       interRepositoryDependencies.put(repository.name,[:])
-      plantumlText += "rectangle " + repository.name  + "\n"
+      plantumlText += "rectangle \"" + repository.name  + "\" as " + repository.name.replace('-','_') + "\n"
 
       println "repository :" + repository.name + ":"
 
@@ -315,7 +315,7 @@ task('allDependencies', group: 'dependencies') {
 
     interRepositoryDependencies.each {String fromRepository, Map toRepositories ->
       toRepositories.each { String name, String version ->
-        plantumlText += fromRepository + "-->" + name + ":" + version + "\n"
+        plantumlText += fromRepository.replace('-','_') + "-->" + name.replace('-','_') + ":" + version + "\n"
       }
     }
 
@@ -637,7 +637,7 @@ project.multiproject.projects.each { projName, proj ->
             //TODO document each line format according to Gradle and make code more readable - simplify if-else-matcher
             myOutputStr.eachLine { line, count ->
 
-              def matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):(.*)/
+              def matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]+)/
               if (matcher.matches()) {
                 ProjectDependency prjdep = new ProjectDependency(
                         name: matcher[0][2],
@@ -655,7 +655,7 @@ project.multiproject.projects.each { projName, proj ->
                   project.dependencies.add(prjdep)
                 }
                 else {
-                  matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]+) -> (.*)/
+                  matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]*) -> (.*)/
                   if (matcher.matches()) {
                     ProjectDependency prjdep = new ProjectDependency(
                             name: matcher[0][2],
