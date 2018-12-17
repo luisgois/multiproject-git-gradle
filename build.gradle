@@ -31,6 +31,7 @@ buildscript {
 import org.ajoberstar.grgit.Grgit
 import java.util.regex.Matcher
 import static groovy.json.JsonOutput.*
+import groovy.json.*
 
 boolean isString(x) { 
   x instanceof String || x instanceof GString 
@@ -273,8 +274,13 @@ String charset = 'UTF-8'
 
 task('allDependencies', group: 'dependencies') {
   description = 'Dependency reporting'
+
   doLast {
-    //println prettyPrint(toJson(projectsPerRepository))
+    List files = []
+    JsonSlurper jsonSlurper = new JsonSlurper()
+
+    new File(rootFolder).eachFileMatch(~/^.*\.json$/) { repositoriesList << jsonSlurper.parseFile(it.name) }
+
     def builder = new groovy.json.JsonBuilder(repositoriesList)
     println prettyPrint(builder.toString())
     
@@ -577,76 +583,71 @@ project.multiproject.projects.each { projName, proj ->
      */
     projectsPerRepositoryTask = task("${projName}_projectsPerRepository") {
       description = "Reports projects in repository $projName"
+      File outputJson = new File('../' + projName + '.json')
+
       mustRunAfter update
       allDependencies.dependsOn it
 
+      outputs.file outputJson
+
       doLast {
-      //List configurations = ['compile', 'implementation']
-      List configurations = ['default']
+        //List configurations = ['compile', 'implementation']
+        List configurations = ['default']
 
-      Repository projectRepository = new Repository(name: projName)
+        Repository projectRepository = new Repository(name: projName)
 
-      File buildFileOrDir = new File(projFolder, isString(proj.build) ? proj.build : '.')
+        File buildFileOrDir = new File(projFolder, isString(proj.build) ? proj.build : '.')
 
-      new ByteArrayOutputStream().withStream { os ->
-        def result = exec {
-          println "retrieving projects in $projFolder"
+        new ByteArrayOutputStream().withStream { os ->
+          def result = exec {
+            println "retrieving projects in $projFolder"
 
-          workingDir = projFolder
-          executable = './gradlew'
-          args = ['projects', 'showVersion']
-          standardOutput = os
-          ignoreExitValue = true
+            workingDir = projFolder
+            executable = './gradlew'
+            args = ['projects', 'showVersion']
+            standardOutput = os
+            ignoreExitValue = true
+          }
+
+          String myOutputStr = os.toString()
+
+
+          myOutputStr.eachLine { line, count ->
+            def matcher = line =~ /^([+\\ ]--- Project ':)(.*)'/
+
+            if (matcher.matches()) projectRepository.projects.add(
+                    new RepositoryProject(name: matcher[0][2])
+            )
+
+            matcher = line =~ /^(Version: )(.*)/
+            if (matcher.matches()) projectRepository.version=matcher[0][2]
+          }
+
         }
 
-        String myOutputStr = os.toString()
+        projectRepository.projects.each { RepositoryProject project ->
 
+          // all repository projects share same version as repository
+          project.version = projectRepository.version
 
-        myOutputStr.eachLine { line, count ->
-          def matcher = line =~ /^([+\\ ]--- Project ':)(.*)'/
+          configurations.each { configuration ->
 
-          if (matcher.matches()) projectRepository.projects.add(
-                  new RepositoryProject(name: matcher[0][2])
-          )
+            new ByteArrayOutputStream().withStream { os ->
+              def result = exec {
+                println "retrieving $configuration dependencies for $project.name"
 
-          matcher = line =~ /^(Version: )(.*)/
-          if (matcher.matches()) projectRepository.version=matcher[0][2]
-        }
-
-      }
-
-      projectRepository.projects.each { RepositoryProject project ->
-
-        // all repository projects share same version as repository
-        project.version = projectRepository.version
-
-        configurations.each { configuration ->
-
-          new ByteArrayOutputStream().withStream { os ->
-            def result = exec {
-              println "retrieving $configuration dependencies for $project.name"
-
-              workingDir = projFolder
-              executable = './gradlew'
-              args = [project.name + ':dependencies', '--configuration', configuration]
-              standardOutput = os
-              ignoreExitValue = true
-            }
-
-            String myOutputStr = os.toString()
-            //TODO document each line format according to Gradle and make code more readable - simplify if-else-matcher
-            myOutputStr.eachLine { line, count ->
-
-              def matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]+)/
-              if (matcher.matches()) {
-                ProjectDependency prjdep = new ProjectDependency(
-                        name: matcher[0][2],
-                        version: matcher[0][3]
-                )
-                project.dependencies.add(prjdep)
+                workingDir = projFolder
+                executable = './gradlew'
+                args = [project.name + ':dependencies', '--configuration', configuration]
+                standardOutput = os
+                ignoreExitValue = true
               }
-              else {
-                matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+) -> (.*)/
+
+              String myOutputStr = os.toString()
+              //TODO document each line format according to Gradle and make code more readable - simplify if-else-matcher
+              myOutputStr.eachLine { line, count ->
+
+                def matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]+)/
                 if (matcher.matches()) {
                   ProjectDependency prjdep = new ProjectDependency(
                           name: matcher[0][2],
@@ -655,26 +656,39 @@ project.multiproject.projects.each { projName, proj ->
                   project.dependencies.add(prjdep)
                 }
                 else {
-                  matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]*) -> (.*)/
+                  matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+) -> (.*)/
                   if (matcher.matches()) {
                     ProjectDependency prjdep = new ProjectDependency(
                             name: matcher[0][2],
-                            version: matcher[0][4]
+                            version: matcher[0][3]
                     )
                     project.dependencies.add(prjdep)
                   }
+                  else {
+                    matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]*) -> (.*)/
+                    if (matcher.matches()) {
+                      ProjectDependency prjdep = new ProjectDependency(
+                              name: matcher[0][2],
+                              version: matcher[0][4]
+                      )
+                      project.dependencies.add(prjdep)
+                    }
+                  }
                 }
+
               }
+            } // foreach dependency
+          }   // foreach configuration
+        }     // foreach project
 
-            }
-          } // foreach dependency
-        }   // foreach configuration
-      }     // foreach project
+        println outputJson.absolutePath.toString()
+        // create json file for repository and define it as task output
+        def builder = new groovy.json.JsonBuilder(projectRepository)
+        outputJson.text = builder.toString()
 
-      // add repository to map
-      //TODO define repository files as task inputs (if not default, TBC)
-      //TODO create json file for repository and define it as task output
-      repositoriesList.add(projectRepository)
+        //TODO define repository files as task inputs (if not default, TBC)
+        //repositoriesList.add(projectRepository)
+
       } //doLast
     }
 
