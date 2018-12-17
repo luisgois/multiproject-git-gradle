@@ -158,7 +158,7 @@ class MultiProjectExtension {
 
 project.extensions.create 'multiproject', MultiProjectExtension
   
-apply from: 'config.gradle'
+apply from: 'config.gradle.nes-projects-all'
 
 if(project.ext.has('extraConfig')) {
   def extraConfigs = project.ext.extraConfig.split(',')
@@ -268,6 +268,26 @@ def getDate() {
   new Date().format('yyyyMMddHHmmssSSS')
 }
 
+def traverseDependencies (Map<String, Map> interRepositoryDependencies,String repository) {
+  String plantumlText = ""
+  Map<String> rectangles = [:]
+
+  rectangles.put((String) ("rectangle \"" + repository  + "\" as " + repository.replace('-','_') + "\n"), "")
+
+  interRepositoryDependencies.each {String fromRepository, Map toRepositories ->
+    toRepositories.each { String name, String version ->
+      if (name.equals(repository)) {
+        plantumlText += fromRepository.replace('-','_') + "-->" + name.replace('-','_') + ":" + version + "\n"
+        rectangles.put((String) ("rectangle \"" + fromRepository  + "\" as " + fromRepository.replace('-','_') + "\n"), "")
+        plantumlText += traverseDependencies (interRepositoryDependencies, fromRepository)
+      }
+    }
+  }
+
+  plantumlText = rectangles.keySet().join("\n") + plantumlText
+  return plantumlText
+}
+
 task('allDependencies', group: 'dependencies') {
   description = 'Dependency reporting'
   doLast {
@@ -285,6 +305,9 @@ task('allDependencies', group: 'dependencies') {
 
     Map<String, Map> interRepositoryDependencies = [:]
     String plantumlText = "@startuml\n"
+    String configGradleText = "multiproject {\n" +
+            "  rootFolder '/cm/local_build/goi/nes-projects'\n" +
+            "  git baseUrl: 'http://bitbucket-nm.cfmu.corp.eurocontrol.int:7990/bitbucket/scm/nco', {\n"
 
     repositoriesList.each { Repository repository ->
       interRepositoryDependencies.put(repository.name,[:])
@@ -310,29 +333,46 @@ task('allDependencies', group: 'dependencies') {
       }
     }
 
+    // save to file
+    String filename = "/tmp/DependencyGraph_${getDate()}"
+
+    //TODO remove. this is just a test for using recursive to restrict to dependencies of a repository
+    String traverseForRepository = 'dnp'
+    String traversePlantumlText = "@startuml\n"
+    traversePlantumlText += traverseDependencies(interRepositoryDependencies, traverseForRepository)
+    traversePlantumlText += '@enduml'
+    // - plantuml graph and text to import on other tools
+    new File(filename + '-' + traverseForRepository + '.plantuml').text = traversePlantumlText
+    def sx = new net.sourceforge.plantuml.SourceStringReader(traversePlantumlText)
+    FileOutputStream filex = new FileOutputStream(filename + '-' + traverseForRepository + '.png')
+    sx.outputImage(filex)
+    filex.close()
+    //TODO remove. this is just a test for using recursive to restrict to dependencies of a repository
+
     interRepositoryDependencies.each {String fromRepository, Map toRepositories ->
+      configGradleText += "    project name: '$fromRepository', dependsOn: ["
       toRepositories.each { String name, String version ->
         plantumlText += fromRepository.replace('-','_') + "-->" + name.replace('-','_') + ":" + version + "\n"
+        configGradleText += "'" + name + "',"
       }
+      configGradleText += "]\n"
     }
 
+    configGradleText += "  }\n" +
+            "}"
     plantumlText += '@enduml'
 
-    println plantumlText
 
+
+    // - config.gradle with all dependencies
+    new File(filename + '.gradle').text = configGradleText
+
+    // - plantuml graph and text to import on other tools
+    new File(filename + '.plantuml').text = plantumlText
     def s = new net.sourceforge.plantuml.SourceStringReader(plantumlText)
-    FileOutputStream file = new FileOutputStream("/tmp/DependencyGraph_${getDate()}.png")
-    s.outputImage(file) //.generateImage(file)
+    FileOutputStream file = new FileOutputStream(filename + '.png')
+    s.outputImage(file)
     file.close()
-
-/*
-    DependencyGraph graph = new DependencyGraph(repositoriesList: projectsPerRepository)
-    graph.toPng()
-*/
-
-    //println projectsPerRepository
-    println projectDependencies
-    println repositoryDependencies
   }
 }
 
