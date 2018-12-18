@@ -476,7 +476,7 @@ task('allDependencies', group: 'dependencies') {
 
     //   - save to plantuml text file (.plantuml)
     new File(filename + '.plantuml').text = plantumlText
-   
+
     //   - save to plantuml graph (.png)
     def s = new net.sourceforge.plantuml.SourceStringReader(plantumlText)
     FileOutputStream file = new FileOutputStream(filename + '.png')
@@ -717,7 +717,6 @@ project.multiproject.projects.each { projName, proj ->
   boolean buildSelfDefined = proj.build == null || (proj.build instanceof Boolean && proj.build)
   def projBuildTask = null
   def projCleanTask = null
-  def projectsPerRepositoryTask = null
 
   if(shouldBuild) {
 
@@ -733,114 +732,8 @@ project.multiproject.projects.each { projName, proj ->
       mustRunAfter update
       allDependencies.dependsOn it
 
-<<<<<<< HEAD
+
       outputs.file outputJson
-=======
-      doLast {
-      //List configurations = ['compile', 'implementation']
-      List configurations = ['default']
-
-      Repository projectRepository = new Repository(name: projName)
-
-      File buildFileOrDir = new File(projFolder, isString(proj.build) ? proj.build : '.')
-
-      new ByteArrayOutputStream().withStream { os ->
-        def result = exec {
-          println "retrieving projects in $projFolder"
-
-          workingDir = projFolder
-          executable = './gradlew'
-          args = ['projects', 'showVersion']
-          standardOutput = os
-          ignoreExitValue = true
-        }
-
-        String myOutputStr = os.toString()
-
-
-        myOutputStr.eachLine { line, count ->
-          def matcher = line =~ /^([+\\ ]--- Project ':)(.*)'/
-
-          if (matcher.matches()) projectRepository.projects.add(
-                  new RepositoryProject(name: matcher[0][2])
-          )
-
-          matcher = line =~ /^(Version: )(.*)/
-          if (matcher.matches()) projectRepository.version=matcher[0][2]
-        }
-
-      }
-
-      
-
-        configurations.each { configuration ->
-
-          new ByteArrayOutputStream().withStream { os ->
-            def result = exec {
-              println "retrieving $configuration dependencies for $project.name"
-
-              workingDir = projFolder
-              executable = './gradlew'
-
-              projectRepository.projects.each { RepositoryProject project ->
-
-                // all repository projects share same version as repository
-                project.version = projectRepository.version
-
-                args += [project.name + ':dependencies', '--configuration', configuration]
-              }     // foreach project
-              
-              standardOutput = os
-              ignoreExitValue = true
-            }
-            
-            String myOutputStrAll = os.toString()
-            
-            projectRepository.projects.each { RepositoryProject project ->
-            
-              myOutputStrAll.findAll(/(?ms)^Project :${project.name}$.*\\--- .+\n$/).each { myOutputStr ->
-
-                //TODO document each line format according to Gradle and make code more readable - simplify if-else-matcher
-                myOutputStr.eachLine { line, count ->
-
-                  def matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]+)/
-                  if (matcher.matches()) {
-                    ProjectDependency prjdep = new ProjectDependency(
-                            name: matcher[0][2],
-                            version: matcher[0][3]
-                    )
-                    project.dependencies.add(prjdep)
-                  } else {
-                    matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+) -> (.*)/
-                    if (matcher.matches()) {
-                      ProjectDependency prjdep = new ProjectDependency(
-                              name: matcher[0][2],
-                              version: matcher[0][3]
-                      )
-                      project.dependencies.add(prjdep)
-                    } else {
-                      matcher = line =~ /^[| ]*([+\\ ]--- eurocontrol.nconect):([^: >]+):([^: >]*) -> (.*)/
-                      if (matcher.matches()) {
-                        ProjectDependency prjdep = new ProjectDependency(
-                                name: matcher[0][2],
-                                version: matcher[0][4]
-                        )
-                        project.dependencies.add(prjdep)
-                      }
-                    }
-                  }
-                }
-              } // foreach project
-            }   // foreach all project dependency blocks
-          }     // foreach dependency
-        }       // foreach configuration
-
-        // add repository to map
-        //TODO define repository files as task inputs (if not default, TBC)
-        //TODO create json file for repository and define it as task output
-        repositoriesList.add(projectRepository)
-      } //doLast
->>>>>>> feature/nes
     }
 
     projBuildTask = task("${projName}_build", type: GradleBuild) {
