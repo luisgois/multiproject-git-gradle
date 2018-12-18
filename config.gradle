@@ -1,75 +1,12 @@
-/* This is an example configuration, demonstrating multiproject-git-gradle at work.
- * To use this configuration, run from the command-line "gradle build".
- * See more information in "README.md".
- */
 multiproject {
-  rootFolder '/cm/local_build/goi/nes-projects-all'
+  rootFolder '/cm/local_build/goi/nes-projects'
   git baseUrl: 'http://bitbucket-nm.cfmu.corp.eurocontrol.int:7990/bitbucket/scm/nco', {
-    project name: 'aim'
-    project name: 'airspace'
-    project name: 'aixm'
-    project name: 'aura'
-    project name: 'b2b'
-    project name: 'b2b-integration-tests'
-    project name: 'b2b-ps'
-    project name: 'b2b_gateway'
-    project name: 'b2c-core'
-    project name: 'b2c-react'
-    project name: 'b2c_gateway'
-    project name: 'bem_marshaller'
-    project name: 'broker'
-    project name: 'cal'
-    project name: 'capture'
-    project name: 'chat'
-    project name: 'common_iem'
-    project name: 'config'
-    project name: 'config_data'
-    project name: 'dam'
-    project name: 'data-url-plugin'
-    project name: 'desktop'
-    project name: 'discovery'
-    project name: 'dnp'
-    project name: 'docs'
-    project name: 'dtac'
-    project name: 'elasticsearch'
-    project name: 'env_adapter'
-    project name: 'etfms_adapter'
-    project name: 'eventbus'
-    project name: 'faas'
-    project name: 'fibonacci_example'
-    project name: 'fixm'
-    project name: 'flight'
-    project name: 'fluentd'
-    project name: 'framework_build'
-    project name: 'framework_cell'
-    project name: 'framework_desktop'
-    project name: 'hazelcast'
-    project name: 'iam'
-    project name: 'ifps_adapter'
-    project name: 'java'
-    project name: 'logstash'
-    project name: 'map'
-    project name: 'map-client'
-    project name: 'map-client-airspace'
-    project name: 'map-client-cal'
-    project name: 'map-client-dnp'
-    project name: 'map-client-rad'
-    project name: 'map-client-spi'
-    project name: 'map-node'
-    project name: 'master'
-    project name: 'mongo'
-    project name: 'nconect_hmi'
-    project name: 'net'
-    project name: 'notify'
-    project name: 'ps'
-    project name: 'rabbitmq'
-    project name: 'rad'
-    project name: 'requirement-plugin'
-    project name: 'scenario_management'
-    project name: 'scheduler'
-    project name: 'search'
-    project name: 'spring-boot-admin'
-    project name: 'testlab-plugin'
-    project name: 'upload'
+    project name: 'bem_marshaller', dependsOn: ['framework_cell','framework_build',]
+    project name: 'common_iem', dependsOn: ['framework_cell',]
+    project name: 'env_adapter', dependsOn: ['common_iem','framework_cell',]
+    project name: 'etfms_adapter', dependsOn: ['common_iem','framework_cell','bem_marshaller','framework_build',]
+    project name: 'framework_build', dependsOn: []
+    project name: 'framework_cell', dependsOn: ['framework_build',]
+    project name: 'ifps_adapter', dependsOn: ['common_iem','framework_cell','bem_marshaller',]
   }
 }
