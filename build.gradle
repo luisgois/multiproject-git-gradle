@@ -263,7 +263,9 @@ class DependencyGraph {
 */
 
 class CollectVersionAndDependency extends DefaultTask {
+  @OutputFile
   File outputJson
+
   String repositoryPath
   String repositoryName
 
@@ -354,10 +356,12 @@ class CollectVersionAndDependency extends DefaultTask {
 
   }
 }
-
+/*
 Map projectsPerRepository  = [:]
 Map projectDependencies    = [:]
 Map repositoryDependencies = [:]
+*/
+
 String charset = 'UTF-8'
 
 def getDate() {
@@ -392,7 +396,9 @@ task('allDependencies', group: 'dependencies') {
     // put all .json files together
     JsonSlurper jsonSlurper = new JsonSlurper()
     rootFolder.eachFileMatch(~/^.*\.json$/) {
-      repositoriesList << jsonSlurper.parseFile(it.name)
+      println "parsing $it.canonicalPath"
+      File jsonFile = new File(it.canonicalPath)
+      repositoriesList << (Repository) jsonSlurper.parseText(jsonFile.text)
     }
 
     /////////////////////// debug
@@ -730,7 +736,7 @@ project.multiproject.projects.each { projName, proj ->
       description = "Saves $projName version and dependencies in $outputJson.canonicalPath"
 
       mustRunAfter update
-      allDependencies.dependsOn it
+      //allDependencies.dependsOn it
 
 
       outputs.file outputJson
